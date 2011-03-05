@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This wee bit of code is the entire profiler. It keeps track of time elapsed
@@ -20,14 +21,44 @@ import java.util.Map;
  */
 public class Timer {
 	/**
+	 * Struct to hold timing statistics.
+	 * <p>
+	 * <b>Creation date:</b> Mar 5, 2011
+	 * 
+	 * @author David Houghton
+	 * 
+	 */
+	private static class Stats {
+		long total = 0;
+		int count = 0;
+	}
+
+	/**
 	 * Where output goes. <code>System.err</code> by default.
 	 */
 	public static PrintStream out = System.err;
+	/**
+	 * If set to true, <code>Timer</code> will use {@link TreeMap} instead of
+	 * {@link HashMap} in order to save a little memory.
+	 * <p>
+	 * After a single <code>Timer</code> has been marked as {@link #done()},
+	 * this will have no effect.
+	 */
+	public static boolean conserveMemory = false;
 	protected final String key;
 	protected final long start;
-	protected static final Map<String, long[]> totals = new HashMap<String, long[]>();
-	protected static final Map<String, int[]> counts = new HashMap<String, int[]>();
+	protected static Map<String, Stats> cache;
 	private static Timer singleton;
+
+	/**
+	 * Initialize data structures to retain statistics.
+	 */
+	private static void initMaps() {
+		if (conserveMemory)
+			cache = new TreeMap<String, Timer.Stats>();
+		else
+			cache = new HashMap<String, Timer.Stats>();
+	}
 
 	/**
 	 * Start timer.
@@ -57,20 +88,17 @@ public class Timer {
 	public final void done() {
 		long done = System.currentTimeMillis();
 		synchronized (Timer.class) {
-			if (singleton == null)
+			if (singleton == null) {
 				singleton = this.instance();
-			long[] total = totals.get(key);
+				initMaps();
+			}
+			Stats total = cache.get(key);
 			if (total == null) {
-				total = new long[] { done - start };
-				totals.put(key, total);
-			} else
-				total[0] += done - start;
-			int[] count = counts.get(key);
-			if (count == null) {
-				count = new int[] { 1 };
-				counts.put(key, count);
-			} else
-				count[0]++;
+				total = new Stats();
+				cache.put(key, total);
+			}
+			total.count++;
+			total.total += done - start;
 		}
 	}
 
@@ -80,19 +108,19 @@ public class Timer {
 	}
 
 	public static synchronized void show() {
-		List<String> keys = new ArrayList<String>(totals.keySet());
+		List<String> keys = new ArrayList<String>(cache.keySet());
 
-		if (singleton == null)
+		if (singleton == null) {
 			singleton = new Timer();
+			initMaps();
+		}
 		Collections.sort(keys, singleton.comparator());
 		out.println();
 		for (String key : keys) {
-			long total = totals.get(key)[0];
-			int count = counts.get(key)[0];
-			singleton.output(key, count, total);
+			Stats s = cache.get(key);
+			singleton.output(key, s.count, s.total);
 		}
-		counts.clear();
-		totals.clear();
+		cache.clear();
 	}
 
 	/**
@@ -105,7 +133,7 @@ public class Timer {
 		return new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
-				int comparison = (int) (totals.get(o2)[0] - totals.get(o1)[0]);
+				int comparison = (int) (cache.get(o2).total - cache.get(o1).total);
 				if (comparison == 0)
 					comparison = o1.compareTo(o2);
 				return comparison;
