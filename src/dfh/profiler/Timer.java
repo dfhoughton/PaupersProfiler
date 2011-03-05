@@ -79,16 +79,8 @@ public class Timer {
 	public static synchronized void show() {
 		List<String> keys = new ArrayList<String>(totals.keySet());
 
-		Collections.sort(keys, new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				int comparison = (int) (totals.get(o2)[0] - totals.get(o1)[0]);
-				if (comparison == 0)
-					comparison = o1.compareTo(o2);
-				return comparison;
-			}
-		});
 		Timer singleton = singleton();
+		Collections.sort(keys, singleton.comparator());
 		out.println();
 		for (String key : keys) {
 			long total = totals.get(key)[0];
@@ -100,6 +92,28 @@ public class Timer {
 	}
 
 	/**
+	 * Returns {@link Comparator} for sorting output keys. Provided to allow
+	 * overriding. If overridden, one must also override {@link #singleton()}.
+	 * 
+	 * @return {@link Comparator} for sorting output keys
+	 */
+	public Comparator<? super String> comparator() {
+		return new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				int comparison = (int) (totals.get(o2)[0] - totals.get(o1)[0]);
+				if (comparison == 0)
+					comparison = o1.compareTo(o2);
+				return comparison;
+			}
+		};
+	}
+
+	/**
+	 * Returns <code>Timer</code> on which to invoke
+	 * {@link #output(String, int, long)} and {@link #comparator()} when
+	 * {@link #show()} is invoked.
+	 * 
 	 * @return <code>Timer</code> on which to invoke
 	 *         {@link #output(String, int, long)} when {@link #show()} is
 	 *         invoked.
