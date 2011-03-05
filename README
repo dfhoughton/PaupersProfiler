@@ -1,0 +1,47 @@
+PaupersProfiler
+===============
+
+David Houghton
+March 5, 2011
+
+This is just a Java class for lightweight profiling. It only measures processing time and that
+not very accurately, but it won't bog down your entire process and it won't give you headaches
+because of incompatible libraries and such (my experience with Eclipse).
+
+Here's the usage pattern:
+
+import dfh.profiler.Timer;
+
+...
+
+// main loop
+
+Timer t = new Timer("main");
+while (somethingIsTrue()) {
+   Timer t2 = new Timer("first step");
+   firstStep();
+   t2.done;
+   Timer t3 = new Timer("second step");
+   secondStep();
+   t3.done();
+   ...
+   Timer tn = Timer("nth step");
+   nthStep();
+   tn.done();
+}
+t.done();
+Timer.show();
+
+Basically you create a timer object when you want to start a timer and invoke its done() method
+when you want to collect its time. If you don't click done() this may be done for you by the
+garbage collector but then the timing is less reliable.
+
+The class collects statistics. When you call the static show() method these are printed to STDERR
+sorted with the key associated with the greatest overall processing time at top (and secondarily
+by key). The show() method also flushes the statistics preparatory for the next run.
+
+You can sprinkle timers throughout your code. They are thread safe, but be aware that each thread
+accrues its own time, so the main loop may take an hour and your statistics can indicate that some
+sub-step took 4 hours.
+
+Some behavior can be controlled by static fields. See code or javadocs for details.
