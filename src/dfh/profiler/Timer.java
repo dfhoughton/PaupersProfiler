@@ -107,6 +107,9 @@ public class Timer {
 		done();
 	}
 
+	/**
+	 * Dump statistics to output stream.
+	 */
 	public static synchronized void show() {
 		List<String> keys = new ArrayList<String>(cache.keySet());
 
@@ -120,6 +123,7 @@ public class Timer {
 			Stats s = cache.get(key);
 			singleton.output(key, s.count, s.total);
 		}
+		out.flush();
 		cache.clear();
 	}
 
