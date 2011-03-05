@@ -23,10 +23,10 @@ public class Timer {
 	 * Where output goes. <code>System.err</code> by default.
 	 */
 	public static PrintStream out = System.err;
-	private final String key;
-	private final long start;
-	private static final Map<String, long[]> totals = new HashMap<String, long[]>();
-	private static final Map<String, int[]> counts = new HashMap<String, int[]>();
+	protected final String key;
+	protected final long start;
+	protected static final Map<String, long[]> totals = new HashMap<String, long[]>();
+	protected static final Map<String, int[]> counts = new HashMap<String, int[]>();
 
 	/**
 	 * Start timer.
@@ -45,7 +45,7 @@ public class Timer {
 	 * Used for creation of singleton timer on which to invoke
 	 * {@link #output(String, int, long)}.
 	 */
-	private Timer() {
+	protected Timer() {
 		key = null;
 		start = 0;
 	}
@@ -79,7 +79,7 @@ public class Timer {
 	public static synchronized void show() {
 		List<String> keys = new ArrayList<String>(totals.keySet());
 
-		Timer singleton = singleton();
+		Timer singleton = instance();
 		Collections.sort(keys, singleton.comparator());
 		out.println();
 		for (String key : keys) {
@@ -93,7 +93,7 @@ public class Timer {
 
 	/**
 	 * Returns {@link Comparator} for sorting output keys. Provided to allow
-	 * overriding. If overridden, one must also override {@link #singleton()}.
+	 * overriding. If overridden, one must also override {@link #instance()}.
 	 * 
 	 * @return {@link Comparator} for sorting output keys
 	 */
@@ -118,7 +118,7 @@ public class Timer {
 	 *         {@link #output(String, int, long)} when {@link #show()} is
 	 *         invoked.
 	 */
-	public static Timer singleton() {
+	public static Timer instance() {
 		Timer singleton = new Timer();
 		return singleton;
 	}
@@ -126,7 +126,7 @@ public class Timer {
 	/**
 	 * Method invoked during output generation. Made an instance method to allow
 	 * overriding. If you override this you must also override
-	 * {@link #singleton()} or {@link Timer} won't see it.
+	 * {@link #instance()} or {@link Timer} won't see it.
 	 * 
 	 * @param key
 	 *            name given in {@link #Timer(String)}
