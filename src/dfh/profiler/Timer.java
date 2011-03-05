@@ -27,6 +27,7 @@ public class Timer {
 	protected final long start;
 	protected static final Map<String, long[]> totals = new HashMap<String, long[]>();
 	protected static final Map<String, int[]> counts = new HashMap<String, int[]>();
+	private static Timer singleton;
 
 	/**
 	 * Start timer.
@@ -53,9 +54,11 @@ public class Timer {
 	/**
 	 * Record time and invocation count.
 	 */
-	public void done() {
+	public final void done() {
 		long done = System.currentTimeMillis();
 		synchronized (Timer.class) {
+			if (singleton == null)
+				singleton = this.instance();
 			long[] total = totals.get(key);
 			if (total == null) {
 				total = new long[] { done - start };
@@ -79,7 +82,8 @@ public class Timer {
 	public static synchronized void show() {
 		List<String> keys = new ArrayList<String>(totals.keySet());
 
-		Timer singleton = instance();
+		if (singleton == null)
+			singleton = new Timer();
 		Collections.sort(keys, singleton.comparator());
 		out.println();
 		for (String key : keys) {
@@ -118,7 +122,7 @@ public class Timer {
 	 *         {@link #output(String, int, long)} when {@link #show()} is
 	 *         invoked.
 	 */
-	public static Timer instance() {
+	public Timer instance() {
 		Timer singleton = new Timer();
 		return singleton;
 	}
