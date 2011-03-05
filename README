@@ -44,4 +44,4 @@ You can sprinkle timers throughout your code. They are thread safe, but be aware
 accrues its own time, so the main loop may take an hour and your statistics can indicate that some
 sub-step took 4 hours.
 
-Some behavior can be controlled by static fields. See code or javadocs for details.
+Some behavior can be controlled by static fields or overridable methods. See code or javadocs for details.
