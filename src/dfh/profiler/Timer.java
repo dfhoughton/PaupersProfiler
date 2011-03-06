@@ -47,6 +47,7 @@ public class Timer {
 	public static boolean conserveMemory = false;
 	protected final String key;
 	protected final long start;
+	protected boolean undone = true;
 	protected static Map<String, Stats> cache;
 	private static Timer singleton;
 
@@ -75,7 +76,7 @@ public class Timer {
 
 	/**
 	 * Used for creation of singleton timer on which to invoke
-	 * {@link #output(String, int, long)}.
+	 * {@link #output(String, int, long)} or {@link #comparator()}.
 	 */
 	protected Timer() {
 		key = null;
@@ -85,20 +86,23 @@ public class Timer {
 	/**
 	 * Record time and invocation count.
 	 */
-	public final void done() {
+	public synchronized final void done() {
 		long done = System.currentTimeMillis();
-		synchronized (Timer.class) {
-			if (singleton == null) {
-				singleton = this.instance();
-				initMaps();
+		if (undone) {
+			undone = false;
+			synchronized (Timer.class) {
+				if (singleton == null) {
+					singleton = this.instance();
+					initMaps();
+				}
+				Stats total = cache.get(key);
+				if (total == null) {
+					total = new Stats();
+					cache.put(key, total);
+				}
+				total.count++;
+				total.total += done - start;
 			}
-			Stats total = cache.get(key);
-			if (total == null) {
-				total = new Stats();
-				cache.put(key, total);
-			}
-			total.count++;
-			total.total += done - start;
 		}
 	}
 
