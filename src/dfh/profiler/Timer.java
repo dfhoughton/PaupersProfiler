@@ -115,12 +115,9 @@ public class Timer {
 	 * Dump statistics to output stream.
 	 */
 	public static synchronized void show() {
+		if (singleton == null)
+			return;
 		List<String> keys = new ArrayList<String>(cache.keySet());
-
-		if (singleton == null) {
-			singleton = new Timer();
-			initMaps();
-		}
 		Collections.sort(keys, singleton.comparator());
 		out.println();
 		for (String key : keys) {
