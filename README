@@ -45,3 +45,8 @@ accrues its own time, so the main loop may take an hour and your statistics can 
 sub-step took 4 hours.
 
 Some behavior can be controlled by static fields or overridable methods. See code or javadocs for details.
+
+Other Stuff
+-----------
+This software is distributed under the terms of the FSF Lesser Gnu 
+Public License (see lgpl.txt).
